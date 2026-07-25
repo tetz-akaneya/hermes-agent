@@ -1136,14 +1136,15 @@ class LineAdapter(BasePlatformAdapter):
         chunks = split_for_line(strip_markdown_preserving_urls(content))
         if not chunks:
             return SendResult(success=True, message_id=None)
-        messages = [_text_message(c) for c in chunks][:LINE_MAX_MESSAGES_PER_CALL]
-
-        # If the caller supplied textV2 substitutions, promote the first
-        # bubble to a textV2 message so LINE clients resolve mentions
-        # (and any other substitution placeholders) automatically.
+        messages: List[Dict[str, Any]]
         text_v2_subs = (metadata or {}).get("text_v2_substitutions")
-        if text_v2_subs and messages:
-            messages[0] = _text_v2_message(chunks[0], text_v2_subs)
+        if text_v2_subs:
+            # All bubbles use textV2 so mentions in any chunk are resolved.
+            messages = [
+                _text_v2_message(c, text_v2_subs) for c in chunks
+            ][:LINE_MAX_MESSAGES_PER_CALL]
+        else:
+            messages = [_text_message(c) for c in chunks][:LINE_MAX_MESSAGES_PER_CALL]
 
         token, used_reply = self._consume_reply_token(chat_id)
         if used_reply and not force_push:
