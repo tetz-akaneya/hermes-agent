@@ -1138,7 +1138,7 @@ class LineAdapter(BasePlatformAdapter):
             return SendResult(success=True, message_id=None)
         messages: List[Dict[str, Any]]
         text_v2_subs = (metadata or {}).get("text_v2_substitutions")
-        if text_v2_subs:
+        if isinstance(text_v2_subs, dict) and text_v2_subs:
             # All bubbles use textV2 so mentions in any chunk are resolved.
             messages = [
                 _text_v2_message(c, text_v2_subs) for c in chunks
