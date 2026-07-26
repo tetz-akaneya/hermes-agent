@@ -222,6 +222,29 @@ class TestPostSetup:
         mem0_json = json.loads((tmp_path / "mem0.json").read_text())
         assert mem0_json["mode"] == "platform"
 
+    def test_platform_setup_preserves_native_false_filter_default(self, tmp_path, monkeypatch):
+        (tmp_path / "mem0.json").write_text(
+            json.dumps({"filter_by_agent_id": False})
+        )
+        monkeypatch.setattr(
+            "sys.argv",
+            ["hermes", "--mode", "platform", "--api-key", "sk-test"],
+        )
+        monkeypatch.setattr(
+            "plugins.memory.mem0._setup.get_hermes_home", lambda: tmp_path
+        )
+        _inject_fake_hermes_cli(monkeypatch)
+        monkeypatch.setattr(
+            "plugins.memory.mem0._setup._curses_select",
+            lambda title, items, default=0: default,
+        )
+        config = {"memory": {}}
+
+        post_setup(str(tmp_path), config)
+
+        mem0_json = json.loads((tmp_path / "mem0.json").read_text())
+        assert mem0_json["filter_by_agent_id"] == "false"
+
     def test_platform_setup_saves_filter_by_agent_id(self, tmp_path, monkeypatch):
         monkeypatch.setattr(
             "sys.argv",

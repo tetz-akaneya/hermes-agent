@@ -280,9 +280,10 @@ def _setup_platform(hermes_home: str, config: dict, flags: dict[str, str]) -> No
         if choices and not is_secret:
             choice_items = [(c, "") for c in choices]
             current = provider_config.get(key, default)
+            normalized_current = str(current).lower()
             current_idx = 0
-            if current and str(current).lower() in choices:
-                current_idx = choices.index(str(current).lower())
+            if normalized_current in choices:
+                current_idx = choices.index(normalized_current)
             sel = _curses_select(f"  {desc}", choice_items, default=current_idx)
             provider_config[key] = choices[sel]
         elif is_secret:
